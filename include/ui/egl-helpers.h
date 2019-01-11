@@ -3,7 +3,9 @@
 
 #include <epoxy/gl.h>
 #include <epoxy/egl.h>
+#ifdef CONFIG_OPENGL_DMABUF
 #include <gbm.h>
+#endif
 
 extern EGLDisplay *qemu_egl_display;
 extern EGLConfig qemu_egl_config;
@@ -43,7 +45,7 @@ void egl_dmabuf_release_texture(QemuDmaBuf *dmabuf);
 
 #endif
 
-EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, Window win);
+// EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, Window win);
 
 int qemu_egl_init_dpy_x11(EGLNativeDisplayType dpy, DisplayGLMode mode);
 int qemu_egl_init_dpy_mesa(EGLNativeDisplayType dpy, DisplayGLMode mode);

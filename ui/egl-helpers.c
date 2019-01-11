@@ -15,10 +15,13 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 #include "qemu/osdep.h"
-#include "qemu/drm.h"
 #include "qemu/error-report.h"
 #include "ui/console.h"
 #include "ui/egl-helpers.h"
+
+#ifdef CONFIG_OPENGL_DMABUF
+#include "qemu/drm.h"
+#endif
 
 EGLDisplay *qemu_egl_display;
 EGLConfig qemu_egl_config;
@@ -273,27 +276,27 @@ void egl_dmabuf_release_texture(QemuDmaBuf *dmabuf)
 
 /* ---------------------------------------------------------------------- */
 
-EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, Window win)
-{
-    EGLSurface esurface;
-    EGLBoolean b;
+// EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, Window win)
+// {
+//     EGLSurface esurface;
+//     EGLBoolean b;
 
-    esurface = eglCreateWindowSurface(qemu_egl_display,
-                                      qemu_egl_config,
-                                      (EGLNativeWindowType)win, NULL);
-    if (esurface == EGL_NO_SURFACE) {
-        error_report("egl: eglCreateWindowSurface failed");
-        return NULL;
-    }
+//     esurface = eglCreateWindowSurface(qemu_egl_display,
+//                                       qemu_egl_config,
+//                                       (EGLNativeWindowType)win, NULL);
+//     if (esurface == EGL_NO_SURFACE) {
+//         error_report("egl: eglCreateWindowSurface failed");
+//         return NULL;
+//     }
 
-    b = eglMakeCurrent(qemu_egl_display, esurface, esurface, ectx);
-    if (b == EGL_FALSE) {
-        error_report("egl: eglMakeCurrent failed");
-        return NULL;
-    }
+//     b = eglMakeCurrent(qemu_egl_display, esurface, esurface, ectx);
+//     if (b == EGL_FALSE) {
+//         error_report("egl: eglMakeCurrent failed");
+//         return NULL;
+//     }
 
-    return esurface;
-}
+//     return esurface;
+// }
 
 /* ---------------------------------------------------------------------- */
 
