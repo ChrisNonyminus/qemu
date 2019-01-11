@@ -4015,7 +4015,11 @@ libs_softmmu="$libs_softmmu $fdt_libs"
 # opengl probe (for sdl2, gtk, milkymist-tmu2)
 
 if test "$opengl" != "no" ; then
-  opengl_pkgs="epoxy gbm"
+  if test "$mingw32" = "yes"; then
+    opengl_pkgs="epoxy"
+  else 
+    opengl_pkgs="epoxy gbm"
+  fi
   if $pkg_config $opengl_pkgs; then
     opengl_cflags="$($pkg_config --cflags $opengl_pkgs)"
     opengl_libs="$($pkg_config --libs $opengl_pkgs)"
@@ -4034,7 +4038,7 @@ if test "$opengl" != "no" ; then
   fi
 fi
 
-if test "$opengl" = "yes"; then
+if test "$opengl" = "yes" && test "$mingw32" != "yes"; then
   cat > $TMPC << EOF
 #include <epoxy/egl.h>
 #ifndef EGL_MESA_image_dma_buf_export

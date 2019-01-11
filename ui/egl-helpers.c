@@ -15,10 +15,13 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 #include "qemu/osdep.h"
-#include "qemu/drm.h"
 #include "qemu/error-report.h"
 #include "ui/console.h"
 #include "ui/egl-helpers.h"
+
+#ifdef CONFIG_OPENGL_DMABUF
+#include "qemu/drm.h"
+#endif
 
 EGLDisplay *qemu_egl_display;
 EGLConfig qemu_egl_config;
