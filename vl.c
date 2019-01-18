@@ -1529,7 +1529,7 @@ struct vm_change_state_entry {
     QLIST_ENTRY (vm_change_state_entry) entries;
 };
 
-static QLIST_HEAD(vm_change_state_head, vm_change_state_entry) vm_change_state_head;
+static QLIST_HEAD(, vm_change_state_entry) vm_change_state_head;
 
 VMChangeStateEntry *qemu_add_vm_change_state_handler(VMChangeStateHandler *cb,
                                                      void *opaque)
@@ -3856,13 +3856,6 @@ int main(int argc, char **argv, char **envp)
                 }
                 xen_domid = atoi(optarg);
                 break;
-            case QEMU_OPTION_xen_create:
-                if (!(xen_available())) {
-                    error_report("Option not supported for this target");
-                    exit(1);
-                }
-                xen_mode = XEN_CREATE;
-                break;
             case QEMU_OPTION_xen_attach:
                 if (!(xen_available())) {
                     error_report("Option not supported for this target");
@@ -4329,7 +4322,7 @@ int main(int argc, char **argv, char **envp)
     qemu_opt_foreach(machine_opts, machine_set_property, current_machine,
                      &error_fatal);
 
-    configure_accelerator(current_machine);
+    configure_accelerator(current_machine, argv[0]);
 
     if (!qtest_enabled() && machine_class->deprecation_reason) {
         error_report("Machine type '%s' is deprecated: %s",

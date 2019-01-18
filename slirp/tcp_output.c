@@ -92,7 +92,7 @@ again:
 
 	flags = tcp_outflags[tp->t_state];
 
-	DEBUG_MISC((dfd, " --- tcp_output flags = 0x%x\n",flags));
+	DEBUG_MISC(" --- tcp_output flags = 0x%x", flags);
 
 	/*
 	 * If in persist timeout with window of 0, send 1 byte.
@@ -275,9 +275,9 @@ send:
 			memcpy((caddr_t)(opt + 2), (caddr_t)&mss, sizeof(mss));
 			optlen = 4;
 		}
- 	}
+	}
 
- 	hdrlen += optlen;
+	hdrlen += optlen;
 
 	/*
 	 * Adjust data length if insertion of options will

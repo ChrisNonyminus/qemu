@@ -172,8 +172,7 @@ udp_input(register struct mbuf *m, int iphlen)
 	   */
 	  so = socreate(slirp);
 	  if (udp_attach(so, AF_INET) == -1) {
-	    DEBUG_MISC((dfd," udp_attach errno = %d-%s\n",
-			errno,strerror(errno)));
+	    DEBUG_MISC(" udp_attach errno = %d-%s", errno, strerror(errno));
 	    sofree(so);
 	    goto bad;
 	  }
@@ -209,7 +208,7 @@ udp_input(register struct mbuf *m, int iphlen)
 	  m->m_len += iphlen;
 	  m->m_data -= iphlen;
 	  *ip=save_ip;
-	  DEBUG_MISC((dfd,"udp tx errno = %d-%s\n",errno,strerror(errno)));
+	  DEBUG_MISC("udp tx errno = %d-%s", errno, strerror(errno));
 	  icmp_send_error(m, ICMP_UNREACH, ICMP_UNREACH_NET, 0,
 	                  strerror(errno));
 	  goto bad;
@@ -310,7 +309,7 @@ udp_tos(struct socket *so)
 	while(udptos[i].tos) {
 		if ((udptos[i].fport && ntohs(so->so_fport) == udptos[i].fport) ||
 		    (udptos[i].lport && ntohs(so->so_lport) == udptos[i].lport)) {
-		    	so->so_emu = udptos[i].emu;
+			so->so_emu = udptos[i].emu;
 			return udptos[i].tos;
 		}
 		i++;
