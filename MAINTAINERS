@@ -185,6 +185,7 @@ F: disas/lm32.c
 F: hw/lm32/
 F: hw/*/lm32_*
 F: hw/*/milkymist-*
+F: include/hw/display/milkymist_tmu2.h
 F: include/hw/char/lm32_juart.h
 F: include/hw/lm32/
 F: tests/tcg/lm32/
@@ -623,14 +624,16 @@ F: hw/arm/mps2.c
 F: hw/arm/mps2-tz.c
 F: hw/misc/mps2-*.c
 F: include/hw/misc/mps2-*.h
-F: hw/arm/iotkit.c
-F: include/hw/arm/iotkit.h
+F: hw/arm/armsse.c
+F: include/hw/arm/armsse.h
 F: hw/misc/iotkit-secctl.c
 F: include/hw/misc/iotkit-secctl.h
 F: hw/misc/iotkit-sysctl.c
 F: include/hw/misc/iotkit-sysctl.h
 F: hw/misc/iotkit-sysinfo.c
 F: include/hw/misc/iotkit-sysinfo.h
+F: hw/misc/armsse-cpuid.c
+F: include/hw/misc/armsse-cpuid.h
 
 Musicpal
 M: Jan Kiszka <jan.kiszka@web.de>
@@ -2011,6 +2014,7 @@ F: trace-events
 F: qemu-option-trace.texi
 F: scripts/tracetool.py
 F: scripts/tracetool/
+F: scripts/qemu-trace-stap*
 F: docs/devel/tracing.txt
 T: git https://github.com/stefanha/qemu.git tracing
 
