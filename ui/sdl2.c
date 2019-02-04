@@ -82,6 +82,9 @@ void sdl2_window_create(struct sdl2_console *scon)
     if (scon->hidden) {
         flags |= SDL_WINDOW_HIDDEN;
     }
+    if (scon->opengl) {
+        flags |= SDL_WINDOW_OPENGL;
+    }
 
     scon->real_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED,
                                          SDL_WINDOWPOS_UNDEFINED,
@@ -92,6 +95,10 @@ void sdl2_window_create(struct sdl2_console *scon)
     if (scon->opengl) {
         scon->winctx = SDL_GL_GetCurrentContext();
     }
+    if(!scon->winctx) {
+        scon->winctx = SDL_GL_CreateContext(scon->real_window);
+    }
+
     sdl_update_caption(scon);
 }
 
