@@ -84,6 +84,19 @@ void sdl2_window_create(struct sdl2_console *scon)
     }
     if (scon->opengl) {
         flags |= SDL_WINDOW_OPENGL;
+        if(scon->opts->gl == DISPLAYGL_MODE_ES) {
+            //force EGL and GLES
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+            #ifdef __MINGW32__
+            //setup for use with ANGLE
+            SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+            SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "d3dcompiler_47.dll");
+            //select GLES version by hand.
+            //sould be chosen depending on what the driver is capable of
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+            #endif
+        }
     }
 
     scon->real_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED,
@@ -94,11 +107,11 @@ void sdl2_window_create(struct sdl2_console *scon)
     scon->real_renderer = SDL_CreateRenderer(scon->real_window, -1, 0);
     if (scon->opengl) {
         scon->winctx = SDL_GL_GetCurrentContext();
+        if(!scon->winctx) {
+            scon->winctx = SDL_GL_CreateContext(scon->real_window);
+        }
     }
-    if(!scon->winctx) {
-        scon->winctx = SDL_GL_CreateContext(scon->real_window);
-    }
-
+    
     sdl_update_caption(scon);
 }
 
