@@ -1834,8 +1834,8 @@ fi
 # Consult white-list to determine whether to enable werror
 # by default.  Only enable by default for git builds
 if test -z "$werror" ; then
-    if test -d "$source_path/.git" -a \
-        \( "$linux" = "yes" -o "$mingw32" = "yes" \) ; then
+    if test -d "$source_path/.git" && \
+        { test "$linux" = "yes" || test "$mingw32" = "yes"; }; then
         werror="yes"
     else
         werror="no"
@@ -2359,7 +2359,6 @@ if test "$xen" != "no" ; then
     fi
     QEMU_CFLAGS="$QEMU_CFLAGS $($pkg_config --cflags $xen_pc)"
     libs_softmmu="$($pkg_config --libs $xen_pc) $libs_softmmu"
-    LDFLAGS="$($pkg_config --libs $xen_pc) $LDFLAGS"
   else
 
     xen_libs="-lxenstore -lxenctrl -lxenguest"
@@ -2474,7 +2473,6 @@ int main(void) {
   xenforeignmemory_handle *xfmem;
   xenevtchn_handle *xe;
   xengnttab_handle *xg;
-  xen_domain_handle_t handle;
   xengnttab_grant_copy_segment_t* seg = NULL;
 
   xs_daemon_open();
@@ -2484,7 +2482,6 @@ int main(void) {
   xc_domain_add_to_physmap(0, 0, XENMAPSPACE_gmfn, 0, 0);
   xc_hvm_inject_msi(xc, 0, 0xf0000000, 0x00000000);
   xc_hvm_create_ioreq_server(xc, 0, HVM_IOREQSRV_BUFIOREQ_ATOMIC, NULL);
-  xc_domain_create(xc, 0, handle, 0, NULL, NULL);
 
   xfmem = xenforeignmemory_open(0, 0);
   xenforeignmemory_map(xfmem, 0, 0, 0, 0, 0);
@@ -2526,7 +2523,6 @@ int main(void) {
   xenforeignmemory_handle *xfmem;
   xenevtchn_handle *xe;
   xengnttab_handle *xg;
-  xen_domain_handle_t handle;
 
   xs_daemon_open();
 
@@ -2535,7 +2531,6 @@ int main(void) {
   xc_domain_add_to_physmap(0, 0, XENMAPSPACE_gmfn, 0, 0);
   xc_hvm_inject_msi(xc, 0, 0xf0000000, 0x00000000);
   xc_hvm_create_ioreq_server(xc, 0, HVM_IOREQSRV_BUFIOREQ_ATOMIC, NULL);
-  xc_domain_create(xc, 0, handle, 0, NULL, NULL);
 
   xfmem = xenforeignmemory_open(0, 0);
   xenforeignmemory_map(xfmem, 0, 0, 0, 0, 0);
@@ -2552,21 +2547,6 @@ EOF
         compile_prog "" "$xen_libs $xen_stable_libs"
       then
       xen_ctrl_version=40701
-      xen=yes
-    elif
-        cat > $TMPC <<EOF &&
-#include <xenctrl.h>
-#include <stdint.h>
-int main(void) {
-  xc_interface *xc = NULL;
-  xen_domain_handle_t handle;
-  xc_domain_create(xc, 0, handle, 0, NULL, NULL);
-  return 0;
-}
-EOF
-        compile_prog "" "$xen_libs"
-      then
-      xen_ctrl_version=40700
       xen=yes
 
     # Xen 4.6
@@ -2960,7 +2940,7 @@ EOF
     sdl=yes
 
     # static link with sdl ? (note: sdl.pc's --static --libs is broken)
-    if test "$sdl" = "yes" -a "$static" = "yes" ; then
+    if test "$sdl" = "yes" && test "$static" = "yes" ; then
       if test $? = 0 && echo $sdl_libs | grep -- -laa > /dev/null; then
          sdl_libs="$sdl_libs $(aalib-config --static-libs 2>/dev/null)"
          sdl_cflags="$sdl_cflags $(aalib-config --cflags 2>/dev/null)"
@@ -3102,7 +3082,7 @@ fi
 
 ##########################################
 # VNC SASL detection
-if test "$vnc" = "yes" -a "$vnc_sasl" != "no" ; then
+if test "$vnc" = "yes" && test "$vnc_sasl" != "no" ; then
   cat > $TMPC <<EOF
 #include <sasl/sasl.h>
 #include <stdio.h>
@@ -3125,7 +3105,7 @@ fi
 
 ##########################################
 # VNC JPEG detection
-if test "$vnc" = "yes" -a "$vnc_jpeg" != "no" ; then
+if test "$vnc" = "yes" && test "$vnc_jpeg" != "no" ; then
 cat > $TMPC <<EOF
 #include <stdio.h>
 #include <jpeglib.h>
@@ -3147,7 +3127,7 @@ fi
 
 ##########################################
 # VNC PNG detection
-if test "$vnc" = "yes" -a "$vnc_png" != "no" ; then
+if test "$vnc" = "yes" && test "$vnc_png" != "no" ; then
 cat > $TMPC <<EOF
 //#include <stdio.h>
 #include <png.h>
@@ -3511,7 +3491,7 @@ fi
 # This workaround is required due to a bug in pkg-config file for glib as it
 # doesn't define GLIB_STATIC_COMPILATION for pkg-config --static
 
-if test "$static" = yes -a "$mingw32" = yes; then
+if test "$static" = yes && test "$mingw32" = yes; then
     QEMU_CFLAGS="-DGLIB_STATIC_COMPILATION $QEMU_CFLAGS"
 fi
 
@@ -3604,7 +3584,7 @@ fi
 ##########################################
 # pixman support probe
 
-if test "$want_tools" = "no" -a "$softmmu" = "no"; then
+if test "$want_tools" = "no" && test "$softmmu" = "no"; then
   pixman_cflags=
   pixman_libs=
 elif $pkg_config --atleast-version=0.21.8 pixman-1 > /dev/null 2>&1; then
@@ -3719,7 +3699,7 @@ else
   done
 fi
 
-if test "$mingw32" != yes -a "$pthread" = no; then
+if test "$mingw32" != yes && test "$pthread" = no; then
   error_exit "pthread check failed" \
       "Make sure to have the pthread libs and headers installed."
 fi
@@ -3846,7 +3826,7 @@ fi
 ##########################################
 # TPM passthrough is only on x86 Linux
 
-if test "$targetos" = Linux && test "$cpu" = i386 -o "$cpu" = x86_64; then
+if test "$targetos" = Linux && { test "$cpu" = i386 || test "$cpu" = x86_64; }; then
   tpm_passthrough=$tpm
 else
   tpm_passthrough=no
@@ -4016,7 +3996,7 @@ EOF
   fi
 fi
 
-if test "$opengl" = "yes" -a "$have_x11" = "yes"; then
+if test "$opengl" = "yes" && test "$have_x11" = "yes"; then
   for target in $target_list; do
     case $target in
       lm32-softmmu) # milkymist-tmu2 requires X11 and OpenGL
@@ -4636,9 +4616,17 @@ elif compile_prog "" "$pthread_lib -lrt" ; then
   libs_qga="$libs_qga -lrt"
 fi
 
-if test "$darwin" != "yes" -a "$mingw32" != "yes" -a "$solaris" != yes -a \
-        "$haiku" != "yes" ; then
+# Check whether we need to link libutil for openpty()
+cat > $TMPC << EOF
+extern int openpty(int *am, int *as, char *name, void *termp, void *winp);
+int main(void) { return openpty(0, 0, 0, 0, 0); }
+EOF
+
+if ! compile_prog "" "" ; then
+  if compile_prog "" "-lutil" ; then
     libs_softmmu="-lutil $libs_softmmu"
+    libs_tools="-lutil $libs_tools"
+  fi
 fi
 
 ##########################################
@@ -4712,7 +4700,8 @@ fi
 ##########################################
 # check if we have VSS SDK headers for win
 
-if test "$mingw32" = "yes" -a "$guest_agent" != "no" -a "$vss_win32_sdk" != "no" ; then
+if test "$mingw32" = "yes" && test "$guest_agent" != "no" && \
+        test "$vss_win32_sdk" != "no" ; then
   case "$vss_win32_sdk" in
     "")   vss_win32_include="-isystem $source_path" ;;
     *\ *) # The SDK is installed in "Program Files" by default, but we cannot
@@ -4751,7 +4740,8 @@ fi
 # VSS provider from the source. It is usually unnecessary because the
 # pre-compiled .tlb file is included.
 
-if test "$mingw32" = "yes" -a "$guest_agent" != "no" -a "$guest_agent_with_vss" = "yes" ; then
+if test "$mingw32" = "yes" && test "$guest_agent" != "no" && \
+        test "$guest_agent_with_vss" = "yes" ; then
   if test -z "$win_sdk"; then
     programfiles="$PROGRAMFILES"
     test -n "$PROGRAMW6432" && programfiles="$PROGRAMW6432"
@@ -4767,7 +4757,7 @@ fi
 
 ##########################################
 # check if mingw environment provides a recent ntddscsi.h
-if test "$mingw32" = "yes" -a "$guest_agent" != "no"; then
+if test "$mingw32" = "yes" && test "$guest_agent" != "no"; then
   cat > $TMPC << EOF
 #include <windows.h>
 #include <ntddscsi.h>
@@ -4814,7 +4804,7 @@ case "$capstone" in
   "" | yes)
     if $pkg_config capstone; then
       capstone=system
-    elif test -e "${source_path}/.git" -a $git_update = 'yes' ; then
+    elif test -e "${source_path}/.git" && test $git_update = 'yes' ; then
       capstone=git
     elif test -e "${source_path}/capstone/Makefile" ; then
       capstone=internal
@@ -5186,7 +5176,7 @@ fi
 # There is no point enabling this if cpuid.h is not usable,
 # since we won't be able to select the new routines.
 
-if test "$cpuid_h" = "yes" -a "$avx2_opt" != "no"; then
+if test "$cpuid_h" = "yes" && test "$avx2_opt" != "no"; then
   cat > $TMPC << EOF
 #pragma GCC push_options
 #pragma GCC target("avx2")
@@ -5244,7 +5234,7 @@ EOF
 fi
 
 cmpxchg128=no
-if test "$int128" = yes -a "$atomic128" = no; then
+if test "$int128" = yes && test "$atomic128" = no; then
   cat > $TMPC << EOF
 int main(void)
 {
@@ -5806,8 +5796,8 @@ if test "$want_tools" = "yes" ; then
   if [ "$ivshmem" = "yes" ]; then
     tools="ivshmem-client\$(EXESUF) ivshmem-server\$(EXESUF) $tools"
   fi
-  if [ "$posix" = "yes" ] && [ "$curl" = "yes" ]; then
-    tools="elf2dmp $tools"
+  if [ "$curl" = "yes" ]; then
+      tools="elf2dmp\$(EXESUF) $tools"
   fi
 fi
 if test "$softmmu" = yes ; then
@@ -5917,9 +5907,9 @@ fi
 
 # Mac OS X ships with a broken assembler
 roms=
-if test \( "$cpu" = "i386" -o "$cpu" = "x86_64" \) -a \
-        "$targetos" != "Darwin" -a "$targetos" != "SunOS" -a \
-        "$softmmu" = yes ; then
+if { test "$cpu" = "i386" || test "$cpu" = "x86_64"; } && \
+        test "$targetos" != "Darwin" && test "$targetos" != "SunOS" && \
+        test "$softmmu" = yes ; then
     # Different host OS linkers have different ideas about the name of the ELF
     # emulation. Linux and OpenBSD/amd64 use 'elf_i386'; FreeBSD uses the _fbsd
     # variant; OpenBSD/i386 uses the _obsd variant; and Windows uses i386pe.
@@ -5931,7 +5921,7 @@ if test \( "$cpu" = "i386" -o "$cpu" = "x86_64" \) -a \
         fi
     done
 fi
-if test "$cpu" = "ppc64" -a "$targetos" != "Darwin" ; then
+if test "$cpu" = "ppc64" && test "$targetos" != "Darwin" ; then
   roms="$roms spapr-rtas"
 fi
 
@@ -6397,7 +6387,7 @@ if test "$modules" = "yes"; then
   echo "CONFIG_STAMP=_$( (echo $qemu_version; echo $pkgversion; cat $0) | $shacmd - | cut -f1 -d\ )" >> $config_host_mak
   echo "CONFIG_MODULES=y" >> $config_host_mak
 fi
-if test "$have_x11" = "yes" -a "$need_x11" = "yes"; then
+if test "$have_x11" = "yes" && test "$need_x11" = "yes"; then
   echo "CONFIG_X11=y" >> $config_host_mak
   echo "X11_CFLAGS=$x11_cflags" >> $config_host_mak
   echo "X11_LIBS=$x11_libs" >> $config_host_mak
@@ -6592,7 +6582,7 @@ fi
 if test "$vhost_scsi" = "yes" ; then
   echo "CONFIG_VHOST_SCSI=y" >> $config_host_mak
 fi
-if test "$vhost_net" = "yes" -a "$vhost_user" = "yes"; then
+if test "$vhost_net" = "yes" && test "$vhost_user" = "yes"; then
   echo "CONFIG_VHOST_NET_USED=y" >> $config_host_mak
 fi
 if test "$vhost_crypto" = "yes" ; then
@@ -6987,11 +6977,11 @@ elif test "$ARCH" = "sparc64" ; then
   QEMU_INCLUDES="-iquote \$(SRC_PATH)/tcg/sparc $QEMU_INCLUDES"
 elif test "$ARCH" = "s390x" ; then
   QEMU_INCLUDES="-iquote \$(SRC_PATH)/tcg/s390 $QEMU_INCLUDES"
-elif test "$ARCH" = "x86_64" -o "$ARCH" = "x32" ; then
+elif test "$ARCH" = "x86_64" || test "$ARCH" = "x32" ; then
   QEMU_INCLUDES="-iquote \$(SRC_PATH)/tcg/i386 $QEMU_INCLUDES"
 elif test "$ARCH" = "ppc64" ; then
   QEMU_INCLUDES="-iquote \$(SRC_PATH)/tcg/ppc $QEMU_INCLUDES"
-elif test "$ARCH" = "riscv32" -o "$ARCH" = "riscv64" ; then
+elif test "$ARCH" = "riscv32" || test "$ARCH" = "riscv64" ; then
   QEMU_INCLUDES="-I\$(SRC_PATH)/tcg/riscv $QEMU_INCLUDES"
 else
   QEMU_INCLUDES="-iquote \$(SRC_PATH)/tcg/\$(ARCH) $QEMU_INCLUDES"
@@ -7153,14 +7143,14 @@ TARGET_ABI_DIR=""
 case "$target_name" in
   i386)
     mttcg="yes"
-    gdb_xml_files="i386-32bit.xml i386-32bit-core.xml i386-32bit-sse.xml"
+	gdb_xml_files="i386-32bit.xml"
     target_compiler=$cross_cc_i386
     target_compiler_cflags=$cross_cc_ccflags_i386
   ;;
   x86_64)
     TARGET_BASE_ARCH=i386
     mttcg="yes"
-    gdb_xml_files="i386-64bit.xml i386-64bit-core.xml i386-64bit-sse.xml"
+	gdb_xml_files="i386-64bit.xml"
     target_compiler=$cross_cc_x86_64
   ;;
   alpha)
@@ -7408,7 +7398,7 @@ if test ! -z "$gdb_xml_files" ; then
   echo "TARGET_XML_FILES=$list" >> $config_target_mak
 fi
 
-if test "$target_user_only" = "yes" -a "$bflt" = "yes"; then
+if test "$target_user_only" = "yes" && test "$bflt" = "yes"; then
   echo "TARGET_HAS_BFLT=y" >> $config_target_mak
 fi
 if test "$target_bsd_user" = "yes" ; then
@@ -7530,7 +7520,7 @@ if test "$gprof" = "yes" ; then
   fi
 fi
 
-if test "$target_linux_user" = "yes" -o "$target_bsd_user" = "yes" ; then
+if test "$target_linux_user" = "yes" || test "$target_bsd_user" = "yes" ; then
   ldflags="$ldflags $textseg_ldflags"
 fi
 
@@ -7542,7 +7532,8 @@ fi
 #  - we build the system emulation for s390x (qemu-system-s390x)
 #  - KVM is enabled
 #  - the linker supports --s390-pgste
-if test "$TARGET_ARCH" = "s390x" -a "$target_softmmu" = "yes"  -a "$ARCH" = "s390x" -a "$kvm" = "yes"; then
+if test "$TARGET_ARCH" = "s390x" && test "$target_softmmu" = "yes" && \
+        test "$ARCH" = "s390x" && test "$kvm" = "yes"; then
     if ld_has --s390-pgste ; then
         ldflags="-Wl,--s390-pgste $ldflags"
     fi

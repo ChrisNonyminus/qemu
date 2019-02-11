@@ -266,6 +266,9 @@ void cpu_exec_step_atomic(CPUState *cpu)
 #ifndef CONFIG_SOFTMMU
         tcg_debug_assert(!have_mmap_lock());
 #endif
+        if (qemu_mutex_iothread_locked()) {
+            qemu_mutex_unlock_iothread();
+        }
         assert_no_pages_locked();
     }
 
@@ -324,9 +327,6 @@ TranslationBlock *tb_htable_lookup(CPUState *cpu, target_ulong pc,
     tb_page_addr_t phys_pc;
     struct tb_desc desc;
     uint32_t h;
-
-    cf_mask &= ~CF_CLUSTER_MASK;
-    cf_mask |= cpu->cluster_index << CF_CLUSTER_SHIFT;
 
     desc.env = (CPUArchState *)cpu->env_ptr;
     desc.cs_base = cs_base;
@@ -702,6 +702,7 @@ int cpu_exec(CPUState *cpu)
         if (qemu_mutex_iothread_locked()) {
             qemu_mutex_unlock_iothread();
         }
+        assert_no_pages_locked();
     }
 
     /* if an exception is pending, we execute it here */
