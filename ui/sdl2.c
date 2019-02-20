@@ -85,11 +85,13 @@ void sdl2_window_create(struct sdl2_console *scon)
         flags |= SDL_WINDOW_OPENGL;
         if(scon->opts->gl == DISPLAYGL_MODE_ES) {
             //force EGL and GLES
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                            SDL_GL_CONTEXT_PROFILE_ES);
             #ifdef __MINGW32__
             //setup for use with ANGLE
             SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
-            SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "d3dcompiler_47.dll");
+            SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, 
+                            "d3dcompiler_47.dll");
             //select GLES version by hand.
             //sould be chosen depending on what the driver is capable of
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

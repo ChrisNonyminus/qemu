@@ -150,7 +150,6 @@ QEMUGLContext sdl2_gl_create_context(DisplayChangeListener *dcl,
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                             SDL_GL_CONTEXT_PROFILE_CORE);
     } else if (scon->opts->gl == DISPLAYGL_MODE_ES) {
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                             SDL_GL_CONTEXT_PROFILE_ES);
     }
