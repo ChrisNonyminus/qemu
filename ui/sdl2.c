@@ -90,8 +90,8 @@ void sdl2_window_create(struct sdl2_console *scon)
             #ifdef __MINGW32__
             //setup for use with ANGLE
             SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
-            SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, 
-                            "d3dcompiler_47.dll");
+            SDL_SetHint(SDL_HINT_ANGLE_BACKEND, "d3d11");
+            SDL_SetHint(SDL_HINT_ANGLE_FAST_PATH, "1");
             //select GLES version by hand.
             //sould be chosen depending on what the driver is capable of
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -112,7 +112,7 @@ void sdl2_window_create(struct sdl2_console *scon)
             scon->winctx = SDL_GL_CreateContext(scon->real_window);
         }
     }
-    
+
     sdl_update_caption(scon);
 }
 
