@@ -5,7 +5,6 @@
  */
 #include "qemu/osdep.h"
 #include "qemu/bitmap.h"
-#include "qemu/queue.h"
 #include "ui/console.h"
 #include "ui/input.h"
 #include "ui/kbd-state.h"
@@ -42,20 +41,28 @@ void qkbd_state_key_event(QKbdState *kbd, QKeyCode qcode, bool down)
 {
     bool state = test_bit(qcode, kbd->keys);
 
-    if (state == down) {
+    if (down == false  /* got key-up event   */ &&
+        state == false /* key is not pressed */) {
         /*
-         * Filter out events which don't change the keyboard state.
+         * Filter out suspicious key-up events.
          *
-         * Most notably this allows to simply send along all key-up
-         * events, and this function will filter out everything where
-         * the corresponding key-down event wasn't send to the guest,
-         * for example due to being a host hotkey.
+         * This allows simply sending along all key-up events, and
+         * this function will filter out everything where the
+         * corresponding key-down event wasn't sent to the guest, for
+         * example due to being a host hotkey.
+         *
+         * Note that key-down events on already pressed keys are *not*
+         * suspicious, those are keyboard autorepeat events.
          */
         return;
     }
 
     /* update key and modifier state */
-    change_bit(qcode, kbd->keys);
+    if (down) {
+        set_bit(qcode, kbd->keys);
+    } else {
+        clear_bit(qcode, kbd->keys);
+    }
     switch (qcode) {
     case Q_KEY_CODE_SHIFT:
     case Q_KEY_CODE_SHIFT_R:

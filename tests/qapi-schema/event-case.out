@@ -1,3 +1,4 @@
+module ./builtin
 object q_empty
 enum QType
     prefix QTYPE
@@ -10,4 +11,4 @@ enum QType
     member qbool
 module event-case.json
 event oops None
-   boxed=False
+    boxed=False
