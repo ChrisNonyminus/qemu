@@ -1,5 +1,7 @@
 /GNUmakefile
 /build/
+./bin/win
+/bin/win
 *.pyc
 .sdk
 .stgit-*
