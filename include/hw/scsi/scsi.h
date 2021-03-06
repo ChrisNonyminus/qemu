@@ -1,11 +1,12 @@
 #ifndef QEMU_HW_SCSI_H
 #define QEMU_HW_SCSI_H
 
-#include "hw/qdev.h"
+#include "block/aio.h"
 #include "hw/block/block.h"
-#include "sysemu/sysemu.h"
+#include "hw/qdev-core.h"
 #include "scsi/utils.h"
 #include "qemu/notify.h"
+#include "qom/object.h"
 
 #define MAX_SCSI_DEVS	255
 
@@ -17,6 +18,7 @@ typedef struct SCSIReqOps SCSIReqOps;
 
 #define SCSI_SENSE_BUF_SIZE_OLD 96
 #define SCSI_SENSE_BUF_SIZE 252
+#define DEFAULT_IO_TIMEOUT 30
 
 struct SCSIRequest {
     SCSIBus           *bus;
@@ -49,22 +51,18 @@ struct SCSIRequest {
 };
 
 #define TYPE_SCSI_DEVICE "scsi-device"
-#define SCSI_DEVICE(obj) \
-     OBJECT_CHECK(SCSIDevice, (obj), TYPE_SCSI_DEVICE)
-#define SCSI_DEVICE_CLASS(klass) \
-     OBJECT_CLASS_CHECK(SCSIDeviceClass, (klass), TYPE_SCSI_DEVICE)
-#define SCSI_DEVICE_GET_CLASS(obj) \
-     OBJECT_GET_CLASS(SCSIDeviceClass, (obj), TYPE_SCSI_DEVICE)
+OBJECT_DECLARE_TYPE(SCSIDevice, SCSIDeviceClass, SCSI_DEVICE)
 
-typedef struct SCSIDeviceClass {
+struct SCSIDeviceClass {
     DeviceClass parent_class;
     void (*realize)(SCSIDevice *dev, Error **errp);
+    void (*unrealize)(SCSIDevice *dev);
     int (*parse_cdb)(SCSIDevice *dev, SCSICommand *cmd, uint8_t *buf,
                      void *hba_private);
     SCSIRequest *(*alloc_req)(SCSIDevice *s, uint32_t tag, uint32_t lun,
                               uint8_t *buf, void *hba_private);
     void (*unit_attention_reported)(SCSIDevice *s);
-} SCSIDeviceClass;
+};
 
 struct SCSIDevice
 {
@@ -87,7 +85,9 @@ struct SCSIDevice
     uint64_t port_wwn;
     int scsi_version;
     int default_scsi_version;
+    uint32_t io_timeout;
     bool needs_vpd_bl_emulation;
+    bool hba_supports_iothread;
 };
 
 extern const VMStateDescription vmstate_scsi_device;
@@ -123,7 +123,7 @@ struct SCSIBusInfo {
     int (*parse_cdb)(SCSIDevice *dev, SCSICommand *cmd, uint8_t *buf,
                      void *hba_private);
     void (*transfer_data)(SCSIRequest *req, uint32_t arg);
-    void (*complete)(SCSIRequest *req, uint32_t arg, size_t resid);
+    void (*complete)(SCSIRequest *req, size_t resid);
     void (*cancel)(SCSIRequest *req);
     void (*change)(SCSIBus *bus, SCSIDevice *dev, SCSISense sense);
     QEMUSGList *(*get_sg_list)(SCSIRequest *req);
@@ -134,7 +134,7 @@ struct SCSIBusInfo {
 };
 
 #define TYPE_SCSI_BUS "SCSI"
-#define SCSI_BUS(obj) OBJECT_CHECK(SCSIBus, (obj), TYPE_SCSI_BUS)
+OBJECT_DECLARE_SIMPLE_TYPE(SCSIBus, SCSI_BUS)
 
 struct SCSIBus {
     BusState qbus;
@@ -190,8 +190,9 @@ void scsi_device_unit_attention_reported(SCSIDevice *dev);
 void scsi_generic_read_device_inquiry(SCSIDevice *dev);
 int scsi_device_get_sense(SCSIDevice *dev, uint8_t *buf, int len, bool fixed);
 int scsi_SG_IO_FROM_DEV(BlockBackend *blk, uint8_t *cmd, uint8_t cmd_size,
-                        uint8_t *buf, uint8_t buf_size);
+                        uint8_t *buf, uint8_t buf_size, uint32_t timeout);
 SCSIDevice *scsi_device_find(SCSIBus *bus, int channel, int target, int lun);
+SCSIDevice *scsi_device_get(SCSIBus *bus, int channel, int target, int lun);
 
 /* scsi-generic.c. */
 extern const SCSIReqOps scsi_generic_req_ops;
