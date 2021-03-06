@@ -7,6 +7,9 @@ git pull
 cd ../meson
 git checkout master
 git pull
-cd ../slirp
+cd ../ui/keycodemapdb
+git checkout master
+git pull
+cd ../../slirp
 git checkout master
 git pull
